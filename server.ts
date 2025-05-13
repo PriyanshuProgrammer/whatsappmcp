@@ -28,10 +28,50 @@ server.tool(
     const response = await fetch("http://localhost:3000/groups");
     const data: any = await response.json();
     return {
-      content: [{ type: "text", text: data.groups }]
+      content: [{ type: "text", text: JSON.stringify(data.groups) }]
     };
   }
 );
+
+server.tool(
+  "get_contact_details",
+  "This returns the details of the contact by taking name as input, in your WhatsApp account.",
+  { name: z.string() },
+  async ({ name }) => {
+    const response = await fetch(`http://localhost:3000/contact/${name}`);
+    const data: any = await response.json();
+    return {
+      content: [{ type: "text", text: JSON.stringify(data.contact) }]
+    };
+  }
+);
+
+server.tool(
+  "send_message",
+  "This sends a message to a contact or group. You will get the id using the get_groups tool, example:-{data.groups[index].id}",
+  { id: z.string(), message: z.string() },
+  async ({ id, message }) => {
+    const response = await fetch(`http://localhost:3000/send/${id}/${message}`);
+    const status: any = await response.json();
+    return {
+      content: [{ type: "text", text: status.status }]
+    };
+  }
+);
+
+server.tool(
+  "get_chat",
+  "This returns the details of the chat by taking id, unread count as input, in your WhatsApp account.",
+  { id: z.string(), limit: z.number() },
+  async ({ id, limit }) => {
+    const response = await fetch(`http://localhost:3000/send/${id}/${limit}`);
+    const data: any = await response.json();
+    return {
+      content: [{ type: "text", text: data.messages }]
+    };
+  }
+);
+
 
 // Add a dynamic greeting resource
 server.resource(

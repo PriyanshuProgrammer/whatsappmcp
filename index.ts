@@ -16,6 +16,8 @@ const getContacts = async () => {
 
 client.on('qr', async (qr: any) => {
   console.log("QR RECEIVED", qr);
+  const pairingCode = await client.requestPairingCode('919027376251');
+  console.info('Pairing code:', pairingCode);
 });
 
 client.on('ready', async () => {
@@ -34,6 +36,31 @@ app.get('/groups', async (req, res) => {
   const contacts = await getContacts();
   res.json({
     groups: contacts.filter((contact) => contact.isGroup)
+  })
+})
+
+app.get('/contact/:name', async (req, res) => {
+  const { name } = req.params;
+  const contacts = await getContacts();
+  res.json({
+    contact: contacts.filter((contact) => contact.name?.toLowerCase() === name.toLowerCase())
+  })
+})
+
+app.get('/send/:id/:message', async (req, res) => {
+  const { id, message } = req.params;
+  await client.sendMessage(id, message)
+  res.json({
+    status: 'success'
+  })
+})
+
+app.get('/getchat/:id/:limit', async (req, res) => {
+  const { id, limit } = req.params;
+  const chat = await client.getChatById(id);
+  const messages = await chat.fetchMessages({ limit: parseInt(limit) });
+  res.json({
+    messages
   })
 })
 
